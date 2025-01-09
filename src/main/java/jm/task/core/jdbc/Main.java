@@ -10,8 +10,8 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         //реализуйте алгоритм здесь
-        //UserDao userDao = new UserDaoHibernateImpl();
-        UserDao userDao = new UserDaoJDBCImpl();
+        UserDao userDao = new UserDaoHibernateImpl();
+        //UserDao userDao = new UserDaoJDBCImpl();
         userDao.createUsersTable();
         userDao.saveUser("Владислав", "Балякин", (byte) 22);
         userDao.saveUser("Данил", "Каримов", (byte) 22);
