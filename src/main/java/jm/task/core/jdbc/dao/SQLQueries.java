@@ -17,6 +17,4 @@ public class SQLQueries {
             "SELECT * FROM users";
     public static final String SQLClean =
             "TRUNCATE TABLE users";
-    public static final String SQLCheck =
-            "SELECT COUNT(*) FROM users WHERE id= ?";
 }

@@ -2,6 +2,7 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
@@ -12,6 +13,7 @@ import java.util.List;
 //import static jm.task.core.jdbc.util.Util.getConnection;
 @Slf4j
 public class UserDaoJDBCImpl implements UserDao {
+    @SneakyThrows
     public void createUsersTable() {
         try (Connection connection = Util.getConnection();
              Statement statement = connection.createStatement()) {
@@ -22,10 +24,12 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException e) {
             log.error("Ошибка создания таблицы. Код ошибки:{}. SQL состояние:{}",
                     e.getErrorCode(),e.getSQLState());
+            throw new SQLException("Ошибка выполнения SQL запроса!");
         }
 
     }
 
+    @SneakyThrows
     public void dropUsersTable() {
         try (Connection connection =Util.getConnection();
              Statement statement =connection.createStatement()) {
@@ -36,10 +40,12 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException e) {
             log.error("Ошибка удаления таблицы.Код ошибки:{}. SQL состояние:{}",
                     e.getErrorCode(),e.getSQLState());
+            throw new SQLException("Ошибка выполнения SQL запроса!");
         }
 
     }
 
+    @SneakyThrows
     public void saveUser(String name, String lastName, byte age) {
         try (Connection connection =Util.getConnection();
              PreparedStatement preparedStatement =
@@ -55,38 +61,28 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException e) {
             log.error("Ошибка сохранения пользователя. Код ошибки{}. SQL состояние{}",
                     e.getErrorCode(),e.getSQLState());
+            throw new SQLException("Ошибка выполнения SQL запроса!");
         }
     }
 
+    @SneakyThrows
     public void removeUserById(long id) {
-        try (Connection connection = Util.getConnection()) {
-            try (PreparedStatement checkStatment = connection.prepareStatement(SQLQueries.SQLCheck)) {
-                checkStatment.setLong(1, id);
-                try (ResultSet resultSet = checkStatment.executeQuery()) {
-                    if (resultSet.next() && resultSet.getInt(1) == 0) {
-                        log.warn("Пользователь с заданным ID{} не найден. Удаление не произошло.", id);
-                        return;
-                    }
+        try (Connection connection = Util.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQLQueries.SQlRemove)){
+            preparedStatement.setLong(1,id);
+            preparedStatement.executeUpdate();
 
-                }
 
-            }
-            try (PreparedStatement preparedStatement = connection.prepareStatement(SQLQueries.SQlRemove)) {
-                preparedStatement.setLong(1, id);
-                int rowsAffected = preparedStatement.executeUpdate();
-                if (rowsAffected == 1) {
-                    log.info("Пользовательны с ID{} успешно удален.", id);
-                } else {
-                    log.error("Не удалось удалить пользователя с ID{}.", id);
 
-                }
-            }
         } catch (SQLException e) {
             log.error("Ошибка удаления пользователя с ID{}.", id);
+            throw new SQLException("Ошибка выполнения SQL запроса!");
+
         }
 
     }
 
+    @SneakyThrows
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         try (Connection connection = Util.getConnection();
@@ -107,11 +103,13 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException e) {
             log.error("Ошибка вывода пользователей. Код ошибки{},SQL состояние{}",
                     e.getErrorCode(),e.getSQLState());
+            throw new SQLException("Ошибка выполнения SQL запроса!");
 
         }
         return users;
     }
 
+    @SneakyThrows
     public void cleanUsersTable() {
         try (Connection connection = Util.getConnection()) {
             Statement Statement =
@@ -123,6 +121,7 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException e) {
             log.error("Ошибка очистки таблицы. Код ошибки{}. SQL состояние{}",
                     e.getErrorCode(),e.getSQLState());
+            throw new SQLException("Ошибка выполнения SQL запроса!");
 
         }
 

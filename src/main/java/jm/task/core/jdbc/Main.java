@@ -35,7 +35,7 @@ public class Main {
         }
         userDao.cleanUsersTable();
         userDao.dropUsersTable();
-        System.out.println("завершено");
+        System.out.println("Завершено выполнение \"main\"!");
 
     }
 }

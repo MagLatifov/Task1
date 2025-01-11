@@ -4,6 +4,7 @@ import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +23,10 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             session.createNativeQuery(SQLQueries.SQLCreate).executeUpdate();
             session.getTransaction().commit();
-        }catch (Exception e){
-            log.error("Ошибка создания таблицы: " + e.getMessage() );
+        }catch (HibernateException e){
+            log.error("Ошибка создания таблицы");
+            throw new HibernateException(e);
+
         }
         log.info("Таблица пользователей успешно создана");
     }
@@ -34,8 +37,9 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             session.createNativeQuery(SQLQueries.SQLDrop).executeUpdate();
             session.getTransaction().commit();
-        }catch (Exception e){
+        }catch (HibernateException e){
             log.error("Ошибка удаления таблицы: "+ e.getMessage());
+            throw  new HibernateException(e);
         }
         log.info("Таблица пользователей успешно удалена!");
     }
@@ -50,8 +54,9 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             session.save(user);
             session.getTransaction().commit();
-        }catch (Exception e) {
+        }catch (HibernateException e) {
             log.error("Ошибка при сохранении пользователя: " + e.getMessage());
+            throw new HibernateException(e);
         }
         log.info("User с именем {} добавлен в таблицу",name);
     }
@@ -64,8 +69,9 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             session.delete(user);
             session.getTransaction().commit();
-        }catch (Exception e){
+        }catch (HibernateException e){
             log.error("Ошибка удаления пользователя");
+            throw  new HibernateException(e);
 
         }
         log.info("Пользователь c ID {} удален!",id );
@@ -77,6 +83,9 @@ public class UserDaoHibernateImpl implements UserDao {
         try (Session session = Util.getSession()) {
             session.beginTransaction();
             return session.createQuery("from User", User.class).list();
+        }catch (HibernateException e){
+            log.error("Ошибка получения списка пользователей!");
+            throw new HibernateException(e);
         }
     }
 
@@ -87,7 +96,9 @@ public class UserDaoHibernateImpl implements UserDao {
             session.createQuery("delete  from User").executeUpdate();
             session.getTransaction().commit();
             log.info("Таблица очищена");
+        }catch (HibernateException e){
+            log.error("Ошибка очистки таблицы!");
+            throw new HibernateException(e);
         }
-
     }
 }
