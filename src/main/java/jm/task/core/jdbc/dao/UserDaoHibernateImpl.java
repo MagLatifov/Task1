@@ -1,6 +1,7 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.util.QueryLoader;
 import jm.task.core.jdbc.util.Util;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void createUsersTable() {
         try (Session session = Util.getSession()) {
             session.beginTransaction();
-            session.createNativeQuery(SQLQueries.SQLCreate).executeUpdate();
+            session.createNativeQuery(QueryLoader.getQuery("SQL_CREATE")).executeUpdate();
             session.getTransaction().commit();
         }catch (HibernateException e){
             log.error("Ошибка создания таблицы");
@@ -35,7 +36,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void dropUsersTable() {
         try(Session session =Util.getSession()) {
             session.beginTransaction();
-            session.createNativeQuery(SQLQueries.SQLDrop).executeUpdate();
+            session.createNativeQuery(QueryLoader.getQuery("SQL_DROP")).executeUpdate();
             session.getTransaction().commit();
         }catch (HibernateException e){
             log.error("Ошибка удаления таблицы: "+ e.getMessage());
