@@ -1,10 +1,14 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
+    private Configuration configuration = new Configuration().configure();
     public UserDaoHibernateImpl() {
 
     }
@@ -17,7 +21,11 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
+        try (SessionFactory sessionFactory = configuration.buildSessionFactory();
+             Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
 
+        }
     }
 
     @Override
