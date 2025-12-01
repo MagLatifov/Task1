@@ -1,17 +1,14 @@
 package jm.task.core.jdbc.service;
 
 import jm.task.core.jdbc.dao.UserDao;
-import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 import jm.task.core.jdbc.model.User;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserDao userDao = new UserDaoJDBCImpl();
-    public UserServiceImpl() {
-        super();
-        UserDao userDao = new UserDaoJDBCImpl();
-    }
+    private final UserDao userDao;
 
     public void createUsersTable() {
         userDao.createUsersTable();

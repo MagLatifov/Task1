@@ -1,9 +1,13 @@
 package jm.task.core.jdbc.model;
 
+import lombok.Builder;
+import lombok.Data;
+
 import javax.persistence.*;
 
+@Data
 @Entity
-@Table(name="users")
+@Table(name="users", schema = "public")
 public class User {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -20,13 +24,14 @@ public class User {
 
     public User() { }
 
+    @Builder
     public User(String name, String lastName, Byte age) {
         this.name = name;
         this.lastName = lastName;
         this.age = age;
     }
 
-    public Long getId() {
+    /*public Long getId() {
         return id;
     }
 
@@ -56,15 +61,15 @@ public class User {
 
     public void setAge(Byte age) {
         this.age = age;
-    }
+    }*/
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", age=" + age +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "User{" +
+//                "id=" + id +
+//                ", name='" + name + '\'' +
+//                ", lastName='" + lastName + '\'' +
+//                ", age=" + age +
+//                '}';
+//    }
 }

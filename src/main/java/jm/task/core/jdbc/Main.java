@@ -1,8 +1,8 @@
 package jm.task.core.jdbc;
-
-import jm.task.core.jdbc.dao.UserDao;
 import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.service.UserService;
+import jm.task.core.jdbc.service.UserServiceImpl;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.annotations.common.util.impl.LoggerFactory;
 import org.jboss.logging.Logger;
@@ -16,30 +16,30 @@ public class Main {
     public static void main(String[] args) {
         // реализуйте алгоритм здесь
 
-        UserDao userDao = new UserDaoJDBCImpl();
+        UserService userService = new UserServiceImpl(new UserDaoJDBCImpl());
 
         try (Connection con = Util.getConnection()) {
             System.out.println("Connected to database: " + con.getMetaData().getDatabaseProductName());
             System.out.println(" ---------- -------------- ---------------");
-            userDao.createUsersTable();
-            userDao.saveUser("Magomed", "Magomedovich", (byte)34);
-            userDao.saveUser("Patimat", "Kalimatovna", (byte)56);
-            userDao.saveUser("Ramazan", "Perbudagovich", (byte)45);
+            userService.createUsersTable();
+            userService.saveUser("Magomed", "Magomedovich", (byte)34);
+            userService.saveUser("Patimat", "Kalimatovna", (byte)56);
+            userService.saveUser("Ramazan", "Perbudagovich", (byte)45);
             System.out.println(" ---------- ----- Список User до удаления ------ ---------------");
 
-            for (User user : userDao.getAllUsers()) {
+            for (User user : userService.getAllUsers()) {
                 System.out.println(user);
             }
 
-            userDao.removeUserById(2);
+            userService.removeUserById(2);
             System.out.println(" ---------- ----- Список User после удаления записи ------ ---------------");
 
-            for (User user : userDao.getAllUsers()) {
+            for (User user : userService.getAllUsers()) {
                 System.out.println(user);
             }
 
-            userDao.cleanUsersTable();
-            userDao.dropUsersTable();
+            userService.cleanUsersTable();
+            userService.dropUsersTable();
         } catch (SQLException thrw) {
             log.error("Проищошла ошибка при соелинении с БД : ", thrw);
         }
