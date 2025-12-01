@@ -30,5 +30,4 @@ public final class Util {
                 PropertiesUtil.getProp(DB_USERNAME),
                 PropertiesUtil.getProp(DB_PASSWORD));
     }
-
 }
