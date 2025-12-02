@@ -1,4 +1,5 @@
 package jm.task.core.jdbc.dao;
+import jm.task.core.jdbc.exception.DaoOperationException;
 import jm.task.core.jdbc.model.User;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class UserDaoHibernateImpl implements UserDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            log.error("Произошла ошибка при создании табдицы users.\\n{}", e.getMessage());
+            throw new DaoOperationException("createUsersTable" , "Произошла ошибка при создании табдицы users.", e);
         }
     }
 
@@ -46,7 +47,7 @@ public class UserDaoHibernateImpl implements UserDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            log.error("Произошла ошибка при удалении таблицы users.\\n{}", e.getMessage());
+            throw new DaoOperationException("dropUsersTable" , "Произошла ошибка при удалении таблицы users.", e);
         }
     }
 
@@ -67,7 +68,7 @@ public class UserDaoHibernateImpl implements UserDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            log.error("Произошла ошибка при создании записи.\\n{}", e.getMessage());
+            throw new DaoOperationException("saveUser" , "Произошла ошибка при создании записи.", e);
         }
     }
 
@@ -89,7 +90,7 @@ public class UserDaoHibernateImpl implements UserDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            log.error("Произошла ошибка при удалении записи.\\n{}", e.getMessage());
+            throw new DaoOperationException("removeUserById" , "Произошла ошибка при удалении записи.", e);
         }
     }
 
@@ -107,7 +108,7 @@ public class UserDaoHibernateImpl implements UserDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            log.error("Произошла ошибка при получении записей из таблицы users.\\n{}", e.getMessage());
+            throw new DaoOperationException("getAllUsers" , "Произошла ошибка при получении записей из таблицы users.", e);
         }
         return users;
     }
@@ -123,7 +124,7 @@ public class UserDaoHibernateImpl implements UserDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            log.error("Произошла ошибка при очистки таблицы users.\\n{}", e.getMessage());
+            throw new DaoOperationException("cleanUsersTable" , "Произошла ошибка при очистки таблицы users.", e);
         }
     }
 }
