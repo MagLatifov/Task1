@@ -2,12 +2,14 @@ package jm.task.core.jdbc.model;
 
 import lombok.Builder;
 import lombok.Data;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 
 @Data
 @Entity
 @Table(name="users")
+@BatchSize(size = 50)
 public class User {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

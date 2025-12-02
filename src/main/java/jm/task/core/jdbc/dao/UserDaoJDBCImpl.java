@@ -2,18 +2,16 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.annotations.common.util.impl.LoggerFactory;
-import org.jboss.logging.Logger;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
+@NoArgsConstructor
 public class UserDaoJDBCImpl implements UserDao {
-
-    private static final Logger log = LoggerFactory.logger(UserDaoJDBCImpl.class);
-
-    public UserDaoJDBCImpl() { }
 
     private boolean checkTable(Connection connection) throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();

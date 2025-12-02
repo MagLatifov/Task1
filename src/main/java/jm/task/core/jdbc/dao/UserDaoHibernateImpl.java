@@ -1,45 +1,27 @@
 package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
-import jm.task.core.jdbc.util.Util;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 public class UserDaoHibernateImpl implements UserDao {
-//    private static final Logger log = LoggerFactory.logger(UserDaoHibernateImpl.class);
 
-//    public UserDaoHibernateImpl() { }
-
-//    private boolean checkTable(SessionFactory sessionFactory, String tName) {
-//        try (Session session = sessionFactory.openSession()) {
-//            session.doReturningWork(connection -> {
-//                DatabaseMetaData mData = connection.getMetaData();
-//                try (ResultSet result = mData.getTables(null, "public", tName, null)) {
-//                    return result.next();
-//                }
-//            });
-//        } catch (Exception e) {
-//           log.error("Ошибка при проверке существования таблицы " + tName, e);
-//        }
-//        return false;
-//    }
+    private static final int MAX_USERS_GET_ROW = 1000;
 
     private final SessionFactory sessionFactory;
 
     @Override
     public void createUsersTable() {
         Transaction transaction = null;
-        Session session = sessionFactory.getCurrentSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.createNativeQuery(SQLQuery.CREATE_TABLE).executeUpdate();
             transaction.commit();
@@ -55,8 +37,7 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void dropUsersTable() {
         Transaction transaction = null;
-        Session session = sessionFactory.getCurrentSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.createNativeQuery(SQLQuery.DROP_TABLE).executeUpdate();
             transaction.commit();
@@ -72,8 +53,7 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void saveUser(String name, String lastName, byte age) {
         Transaction transaction = null;
-        Session session = sessionFactory.getCurrentSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             User user = User.builder()
                             .name(name)
@@ -94,8 +74,7 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void removeUserById(long id) {
         Transaction transaction = null;
-        Session session = sessionFactory.getCurrentSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             int countDelRec = session.createNativeQuery(SQLQuery.DELETE)
                                     .setParameter(1, id)
@@ -118,10 +97,11 @@ public class UserDaoHibernateImpl implements UserDao {
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         Transaction transaction = null;
-        Session session = sessionFactory.getCurrentSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            users = session.createQuery("FROM User", User.class).getResultList();
+            users = session.createQuery("FROM User", User.class)
+                    .setMaxResults(MAX_USERS_GET_ROW)
+                    .getResultList();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null && transaction.isActive()) {
@@ -129,15 +109,13 @@ public class UserDaoHibernateImpl implements UserDao {
             }
             log.error("Произошла ошибка при получении записей из таблицы users.\\n{}", e.getMessage());
         }
-
         return users;
     }
 
     @Override
     public void cleanUsersTable() {
         Transaction transaction = null;
-        Session session = sessionFactory.getCurrentSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.createNativeQuery(SQLQuery.CLEAR_TABLE).executeUpdate();
             transaction.commit();
