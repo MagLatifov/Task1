@@ -1,48 +1,52 @@
 package jm.task.core.jdbc;
+import jm.task.core.jdbc.dao.UserDao;
 import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.service.UserService;
 import jm.task.core.jdbc.service.UserServiceImpl;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.annotations.common.util.impl.LoggerFactory;
-import org.jboss.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
+@Slf4j
 public class Main {
-    private static final Logger log = LoggerFactory.logger(Main.class);
-
     public static void main(String[] args) {
         // реализуйте алгоритм здесь
-
-        UserService userService = new UserServiceImpl(new UserDaoJDBCImpl());
+        UserDao userdao = new UserDaoJDBCImpl();
+        UserService userService = new UserServiceImpl(userdao);
 
         try (Connection con = Util.getConnection()) {
-            System.out.println("Connected to database: " + con.getMetaData().getDatabaseProductName());
-            System.out.println(" ---------- -------------- ---------------");
+            log.info("Connected to database: " + con.getMetaData().getDatabaseProductName());
+            log.info(" ---------- -------------- ---------------");
             userService.createUsersTable();
             userService.saveUser("Magomed", "Magomedovich", (byte)34);
             userService.saveUser("Patimat", "Kalimatovna", (byte)56);
             userService.saveUser("Ramazan", "Perbudagovich", (byte)45);
-            System.out.println(" ---------- ----- Список User до удаления ------ ---------------");
+            log.info(" ---------- ----- Список User до удаления ------ ---------------");
 
-            for (User user : userService.getAllUsers()) {
-                System.out.println(user);
-            }
+            printList(userService.getAllUsers());
 
             userService.removeUserById(2);
-            System.out.println(" ---------- ----- Список User после удаления записи ------ ---------------");
+            log.info(" ---------- ----- Список User после удаления записи ------ ---------------");
 
-            for (User user : userService.getAllUsers()) {
-                System.out.println(user);
-            }
+            printList(userService.getAllUsers());
 
             userService.cleanUsersTable();
             userService.dropUsersTable();
         } catch (SQLException thrw) {
-            log.error("Проищошла ошибка при соелинении с БД : ", thrw);
+            log.error("Произошла ошибка при соединение с БД : ", thrw);
         }
 
+    }
+
+    public static void printList(List<User> usr) {
+        int i = 1;
+        for (User user : usr) {
+            log.info("Запись #{}: {}", i, user);
+            i++;
+        }
     }
 }

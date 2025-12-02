@@ -2,18 +2,16 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.annotations.common.util.impl.LoggerFactory;
-import org.jboss.logging.Logger;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
+@NoArgsConstructor
 public class UserDaoJDBCImpl implements UserDao {
-
-    private static final Logger log = LoggerFactory.logger(UserDaoJDBCImpl.class);
-
-    public UserDaoJDBCImpl() { }
 
     private boolean checkTable(Connection connection) throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();
@@ -49,7 +47,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 stm.setString(2, lastName);
                 stm.setByte(3, age);
                 stm.executeUpdate();
-                log.info("Успешно добавлена запись: " + name);
+                log.info("Успешно добавлена запись: {}", name);
         } catch (SQLException s) {
             throw new RuntimeException(s);
         }
@@ -60,8 +58,8 @@ public class UserDaoJDBCImpl implements UserDao {
              PreparedStatement stm = con.prepareStatement(SQLQuery.DELETE)) {
                 stm.setLong(1, id);
                 if (stm.executeUpdate() > 0) {
-                    log.info("Запись успешно удаоена: <id = " + id + ">");
-                } else log.warn("Невозможно удвлить запись, так как нету в таблице users запись с <id = " + id + ">");
+                    log.info("Запись успешно удаоена: <id = {}>", id);
+                } else log.warn("Невозможно удвлить запись, так как нету в таблице users запись с <id = {}>", id);
         } catch (SQLException s) {
             throw new RuntimeException(s);
         }
