@@ -1,43 +1,63 @@
 package jm.task.core.jdbc.util;
 
 import jm.task.core.jdbc.model.User;
+import lombok.Getter;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.Metadata;
+import org.hibernate.annotations.common.util.impl.LoggerFactory;
+
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.jboss.logging.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
-public class Util {
-    private static Connection connection = null;
-    private static final String url = "jdbc:postgresql://localhost:5433/first_db";
-    private static final String user = "postgres";
-    private static final String password = "1111";
-    private static SessionFactory sessionFactory;
-    public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            Properties props = new Properties();
-            props.setProperty("user", user);
-            props.setProperty("password", password);
-            connection = DriverManager.getConnection(url, props);
-        }
-        return connection;
+public final class Util {
+    // реализуйте настройку соеденения с БД
+
+    private final static Logger log = LoggerFactory.logger(Util.class);
+
+    private final static String DB_URL = "db.url";
+    private final static String DB_USERNAME = "db.username";
+    private final static String DB_PASSWORD = "db.password";
+
+    @Getter
+    private final static SessionFactory sessionFactory = createSessionFactory();
+
+    private Util() {
+        throw new AssertionError("Создавать экземпляр класса Util нельзя!!!");
     }
 
-    public static SessionFactory getSessionFactory() throws SQLException{
-        if (sessionFactory == null){
-            Configuration config = new Configuration();
-            config.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
-            config.setProperty("hibernate.connection.url", url);
-            config.setProperty("hibernate.connection.username", user);
-            config.setProperty("hibernate.connection.password", password);
-            config.addAnnotatedClass(User.class);
-            StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(config.getProperties());
-            sessionFactory = config.buildSessionFactory(builder.build());
+    //соединения по JDBC
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(
+                PropertiesUtil.getProp(DB_URL),
+                PropertiesUtil.getProp(DB_USERNAME),
+                PropertiesUtil.getProp(DB_PASSWORD));
+    }
+
+    // соединение к БД через Hibernate
+    public static SessionFactory createSessionFactory() {
+           try {
+               Configuration configuration = new Configuration().configure();
+               configuration.addAnnotatedClass(User.class);
+               StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
+                       .applySettings(configuration.getProperties());
+               SessionFactory sFactory = configuration.buildSessionFactory(builder.build());
+               log.info("Соединение с БД через Hibernate прошло успешно.");
+               return sFactory;
+           } catch (Exception e) {
+               log.error("Произошла ошибка при соединении через Hibernate.", e);
+               throw new ExceptionInInitializerError("Ошибка при создании SessionFactory");
+           }
+    }
+
+    //закрытие фабрики сессий
+    public static void shutDownSessionFactory() {
+        if (sessionFactory != null && !sessionFactory.isClosed()) {
+            sessionFactory.close();
+            log.info("Соединение с БД через Hibernate полностью закрыто.");
         }
-        return sessionFactory;
     }
 }

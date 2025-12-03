@@ -1,86 +1,130 @@
 package jm.task.core.jdbc.dao;
-
+import jm.task.core.jdbc.exception.DaoOperationException;
 import jm.task.core.jdbc.model.User;
-import jm.task.core.jdbc.util.Util;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class UserDaoHibernateImpl implements UserDao{
-    public UserDaoHibernateImpl() {
+@Slf4j
+@RequiredArgsConstructor
+public class UserDaoHibernateImpl implements UserDao {
 
-    }
+    private static final int MAX_USERS_GET_ROW = 1000;
+
+    private final SessionFactory sessionFactory;
 
     @Override
     public void createUsersTable() {
-        try (Session session = Util.getSessionFactory().openSession()) {
-            Transaction tr = session.beginTransaction();
-            session.createSQLQuery("CREATE TABLE IF NOT EXISTS users" +
-                    "(id bigserial PRIMARY KEY, name VARCHAR(255), lastname VARCHAR(255), age smallint)").executeUpdate();
-            tr.commit();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.createNativeQuery(SQLQuery.CREATE_TABLE).executeUpdate();
+            transaction.commit();
+            log.info("Таблица users успешно создана или она существовала... ");
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new DaoOperationException("createUsersTable" , "Произошла ошибка при создании табдицы users.", e);
         }
     }
 
     @Override
-    public void dropUsersTable(){
-        try (Session session = Util.getSessionFactory().openSession()) {
-            Transaction tr = session.beginTransaction();
-            session.createSQLQuery("DROP TABLE IF EXISTS users").executeUpdate();
-            tr.commit();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void dropUsersTable() {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.createNativeQuery(SQLQuery.DROP_TABLE).executeUpdate();
+            transaction.commit();
+            System.out.println("Таблица users успешно Удалена или она существовала... ");
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new DaoOperationException("dropUsersTable" , "Произошла ошибка при удалении таблицы users.", e);
         }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        try (Session session = Util.getSessionFactory().openSession()) {
-            Transaction tr = session.beginTransaction();
-            session.save(new User(name, lastName, age));
-            tr.commit();
-            System.out.println("User с именем " + name + " добавлен в базу данных");
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            User user = User.builder()
+                            .name(name)
+                            .lastName(lastName)
+                            .age(age)
+                        .build();
+            session.save(user);
+            transaction.commit();
+            log.warn("Запись успешно создана: {}", name);
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new DaoOperationException("saveUser" , "Произошла ошибка при создании записи.", e);
         }
     }
 
     @Override
     public void removeUserById(long id) {
-        try (Session session = Util.getSessionFactory().openSession()) {
-            Transaction tr = session.beginTransaction();
-            User user = session.get(User.class, id);
-            if (user != null){
-                session.delete(user);
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            int countDelRec = session.createNativeQuery(SQLQuery.DELETE)
+                                    .setParameter(1, id)
+                                    .executeUpdate();
+            if (countDelRec > 0) {
+                log.info("Запись успешно удалена <ID>: {}", id);
+            } else {
+                log.info("Нет записи в таблице с <ID>: {}", id);
             }
-            tr.commit();
-            System.out.println("User с ID " + id + " удален из базы данных");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new DaoOperationException("removeUserById" , "Произошла ошибка при удалении записи.", e);
         }
     }
 
     @Override
     public List<User> getAllUsers() {
-        try (Session session = Util.getSessionFactory().openSession()) {
-            return session.createQuery("From users", User.class).list();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+        List<User> users = new ArrayList<>();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            users = session.createQuery("FROM User", User.class)
+                    .setMaxResults(MAX_USERS_GET_ROW)
+                    .getResultList();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new DaoOperationException("getAllUsers" , "Произошла ошибка при получении записей из таблицы users.", e);
         }
+        return users;
     }
 
     @Override
     public void cleanUsersTable() {
-        try (Session session = Util.getSessionFactory().openSession()) {
-            Transaction tr = session.beginTransaction();
-            session.createQuery("delete from users").executeUpdate();
-            tr.commit();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.createNativeQuery(SQLQuery.CLEAR_TABLE).executeUpdate();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new DaoOperationException("cleanUsersTable" , "Произошла ошибка при очистки таблицы users.", e);
         }
     }
 }
